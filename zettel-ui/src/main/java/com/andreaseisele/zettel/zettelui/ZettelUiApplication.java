@@ -1,13 +1,24 @@
 package com.andreaseisele.zettel.zettelui;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.andreaseisele.zettel.zettelui.controller.MainController;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
-@SpringBootApplication
-public class ZettelUiApplication {
+public class ZettelUiApplication extends Application {
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		Parent root = FXMLLoader.load(MainController.class.getResource("main-scene.fxml"));
+		Scene scene = new Scene(root);
+		primaryStage.setScene(scene);
+		primaryStage.show();
+	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(ZettelUiApplication.class, args);
+		launch(args);
 	}
 
 }
