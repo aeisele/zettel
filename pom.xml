@@ -6,16 +6,20 @@
     <groupId>com.andreaseisele.zettel</groupId>
     <artifactId>zettel-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <properties>
-        <log4j.version>2.13.3</log4j.version>
-    </properties>
     <name>zettel-parent</name>
     <description>parent project for Zettelwirtschaft</description>
     <packaging>pom</packaging>
 
     <modules>
         <module>zettel-ui</module>
+        <module>zettel-core</module>
     </modules>
+
+    <properties>
+        <log4j.version>2.13.3</log4j.version>
+        <junit.version>5.6.2</junit.version>
+        <truth.version>1.0.1</truth.version>
+    </properties>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
@@ -36,9 +40,29 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.6.2</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.truth/truth -->
+        <dependency>
+            <groupId>com.google.truth</groupId>
+            <artifactId>truth</artifactId>
+            <version>${truth.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.11.2</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>
