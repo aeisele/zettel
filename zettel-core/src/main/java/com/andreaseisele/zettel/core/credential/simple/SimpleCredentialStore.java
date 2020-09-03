@@ -23,7 +23,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -53,16 +52,15 @@ public class SimpleCredentialStore implements CredentialStore {
     }
 
     public static SimpleCredentialStore loadFromFile(Path inputFile, char[] masterPassword) {
-        Base64.Decoder base64Decoder = Base64.getDecoder();
 
         ObjectMapper objectMapper = new ObjectMapper();
         MapType credentialMapType = registerMapType(objectMapper);
 
         try (Reader reader = Files.newBufferedReader(inputFile)) {
             Envelope envelope = objectMapper.readValue(reader, Envelope.class);
-            byte[] salt = base64Decoder.decode(envelope.getSalt());
-            byte[] iv = base64Decoder.decode(envelope.getIv());
-            byte[] payload = base64Decoder.decode(envelope.getPayload());
+            byte[] salt = envelope.getSalt();
+            byte[] iv = envelope.getIv();
+            byte[] payload = envelope.getPayload();
 
             SecretKeySpec secretKey = deriveSecretKey(masterPassword, salt);
 
@@ -84,7 +82,6 @@ public class SimpleCredentialStore implements CredentialStore {
     }
 
     public void saveToFile(Path outputFile) {
-        Base64.Encoder base64Encoder = Base64.getEncoder();
 
         ObjectMapper objectMapper = new ObjectMapper();
         MapType credentialMapType = registerMapType(objectMapper);
@@ -101,13 +98,10 @@ public class SimpleCredentialStore implements CredentialStore {
             Cipher cipher = Cipher.getInstance(CIPHER);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             IvParameterSpec ivParameters = cipher.getParameters().getParameterSpec(IvParameterSpec.class);
-            byte[] iv = base64Encoder.encode(ivParameters.getIV());
+            byte[] iv = ivParameters.getIV();
             byte[] encrypted = cipher.doFinal(unEncrypted);
 
-            byte[] payload = base64Encoder.encode(encrypted);
-            byte[] saltEncoded = base64Encoder.encode(salt);
-
-            Envelope envelope = new Envelope(saltEncoded, iv, payload);
+            Envelope envelope = new Envelope(salt, iv, encrypted);
 
             objectMapper.writeValue(writer, envelope);
 

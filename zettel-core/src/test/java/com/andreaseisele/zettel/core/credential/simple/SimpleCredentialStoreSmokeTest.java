@@ -17,7 +17,7 @@ import java.util.Optional;
 
 import static com.google.common.truth.Truth.assertThat;
 
-class SimpleCredentialStoreTest {
+class SimpleCredentialStoreSmokeTest {
 
     private final char[] MASTER_PASSWORD = new char[]{'p', 'a', 's', 's', 'w', 'o', 'r', 'd'};
     private static final String TEST_KEY = "test_entry";
@@ -53,6 +53,25 @@ class SimpleCredentialStoreTest {
         SimpleCredentialStore credentialStore = SimpleCredentialStore.loadFromFile(inputFile, MASTER_PASSWORD);
 
         Optional<UsernamePasswordCredential> maybeCredential = credentialStore.get(TEST_KEY, UsernamePasswordCredential.class);
+        Truth8.assertThat(maybeCredential).isPresent();
+
+        UsernamePasswordCredential credential = maybeCredential.get();
+        assertThat(credential.getUsername()).isEqualTo(TEST_USER);
+        assertThat(credential.getPassword()).isEqualTo(TEST_PW);
+    }
+
+    @Test
+    void testRoundtrip() throws IOException {
+        Path file = openPath("roundtrip", "store.dat");
+
+        SimpleCredentialStore credentialStore = SimpleCredentialStore.createNew(MASTER_PASSWORD);
+        credentialStore.put(TEST_KEY, new UsernamePasswordCredential(TEST_USER, TEST_PW));
+
+        credentialStore.saveToFile(file);
+
+        SimpleCredentialStore loaded = SimpleCredentialStore.loadFromFile(file, MASTER_PASSWORD);
+
+        Optional<UsernamePasswordCredential> maybeCredential = loaded.get(TEST_KEY, UsernamePasswordCredential.class);
         Truth8.assertThat(maybeCredential).isPresent();
 
         UsernamePasswordCredential credential = maybeCredential.get();
