@@ -1,8 +1,8 @@
 package com.andreaseisele.zettel.core.credential.simple;
 
-import com.andreaseisele.zettel.core.credential.Credential;
 import com.andreaseisele.zettel.core.credential.CredentialStore;
 import com.andreaseisele.zettel.core.credential.CredentialStoreException;
+import com.andreaseisele.zettel.core.credential.data.Credential;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import org.apache.logging.log4j.LogManager;
@@ -13,8 +13,14 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.Base64;
@@ -30,7 +36,7 @@ public class SimpleCredentialStore implements CredentialStore {
     private static final String SECRET_KEY_ALGO = "AES";
     private static final String CIPHER = "AES/CBC/PKCS5Padding";
     private static final int ITERATION_COUNT = 40_000;
-    private static final int HASH_SIZE = 512;
+    private static final int HASH_SIZE = 256;
     private static final int SALT_SIZE = 128;
 
     private final Map<String, Credential> credentials;
@@ -50,10 +56,10 @@ public class SimpleCredentialStore implements CredentialStore {
         Base64.Decoder base64Decoder = Base64.getDecoder();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        MapType credentialMapType = objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Credential.class);
+        MapType credentialMapType = registerMapType(objectMapper);
 
-        try {
-            Envelope envelope = objectMapper.readValue(inputFile.toFile(), Envelope.class);
+        try (Reader reader = Files.newBufferedReader(inputFile)) {
+            Envelope envelope = objectMapper.readValue(reader, Envelope.class);
             byte[] salt = base64Decoder.decode(envelope.getSalt());
             byte[] iv = base64Decoder.decode(envelope.getIv());
             byte[] payload = base64Decoder.decode(envelope.getPayload());
@@ -81,10 +87,13 @@ public class SimpleCredentialStore implements CredentialStore {
         Base64.Encoder base64Encoder = Base64.getEncoder();
 
         ObjectMapper objectMapper = new ObjectMapper();
+        MapType credentialMapType = registerMapType(objectMapper);
 
-        try {
+        try (Writer writer = Files.newBufferedWriter(outputFile)) {
 
-            byte[] unEncrypted = objectMapper.writeValueAsBytes(credentials);
+            byte[] unEncrypted = objectMapper.writerFor(credentialMapType).writeValueAsBytes(credentials);
+
+            logger.debug("unencrypted: {}", () -> new String(unEncrypted));
 
             byte[] salt = generateSalt();
             SecretKeySpec secretKey = deriveSecretKey(masterPassword, salt);
@@ -99,7 +108,8 @@ public class SimpleCredentialStore implements CredentialStore {
             byte[] saltEncoded = base64Encoder.encode(salt);
 
             Envelope envelope = new Envelope(saltEncoded, iv, payload);
-            objectMapper.writeValue(outputFile.toFile(), envelope);
+
+            objectMapper.writeValue(writer, envelope);
 
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeySpecException | InvalidKeyException
                 | InvalidParameterSpecException | IllegalBlockSizeException | BadPaddingException | IOException e) {
@@ -124,14 +134,25 @@ public class SimpleCredentialStore implements CredentialStore {
         return new SecretKeySpec(secretKey.getEncoded(), SECRET_KEY_ALGO);
     }
 
+    private static MapType registerMapType(ObjectMapper objectMapper) {
+        return objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Credential.class);
+    }
+
     @Override
-    public Optional<Credential> get(String key) {
-        return Optional.ofNullable(credentials.get(key));
+    public <T extends Credential> Optional<T> get(String key, Class<T> type) {
+        return Optional.ofNullable(credentials.get(key))
+                .filter(c -> type.isAssignableFrom(c.getClass()))
+                .map(type::cast);
     }
 
     @Override
     public void put(String key, Credential credential) {
         credentials.put(key, credential);
+    }
+
+    @Override
+    public void delete(String key) {
+        credentials.remove(key);
     }
 
 }

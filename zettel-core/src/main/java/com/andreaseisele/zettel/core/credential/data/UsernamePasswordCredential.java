@@ -1,4 +1,4 @@
-package com.andreaseisele.zettel.core.credential;
+package com.andreaseisele.zettel.core.credential.data;
 
 public class UsernamePasswordCredential implements Credential {
 
@@ -6,9 +6,12 @@ public class UsernamePasswordCredential implements Credential {
 
     private char[] password;
 
-    @Override
-    public Type getType() {
-        return Type.USERNAME_PASSWORD;
+    public UsernamePasswordCredential() {
+    }
+
+    public UsernamePasswordCredential(char[] username, char[] password) {
+        this.username = username;
+        this.password = password;
     }
 
     public char[] getUsername() {
