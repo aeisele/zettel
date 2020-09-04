@@ -2,7 +2,7 @@ module zettel.ui {
 
     requires javafx.controls;
     requires javafx.fxml;
-    requires org.apache.logging.log4j;
+    requires org.slf4j;
 
     opens com.andreaseisele.zettel.zettelui.controller to javafx.fxml;
 

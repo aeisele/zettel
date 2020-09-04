@@ -17,6 +17,11 @@
     </modules>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+
+        <slf4j.version>1.7.30</slf4j.version>
         <log4j.version>2.13.3</log4j.version>
         <junit.version>5.6.2</junit.version>
         <truth.version>1.0.1</truth.version>
@@ -24,10 +29,18 @@
     </properties>
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
+
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
+            <artifactId>log4j-slf4j-impl</artifactId>
             <version>${log4j.version}</version>
         </dependency>
 
@@ -46,19 +59,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.google.truth/truth -->
+        <!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
         <dependency>
-            <groupId>com.google.truth</groupId>
-            <artifactId>truth</artifactId>
-            <version>${truth.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.google.truth.extensions/truth-java8-extension -->
-        <dependency>
-            <groupId>com.google.truth.extensions</groupId>
-            <artifactId>truth-java8-extension</artifactId>
-            <version>${truth.version}</version>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.17.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -78,6 +83,40 @@
                 <groupId>com.google.dagger</groupId>
                 <artifactId>dagger</artifactId>
                 <version>${dagger.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/net.harawata/appdirs -->
+            <dependency>
+                <groupId>net.harawata</groupId>
+                <artifactId>appdirs</artifactId>
+                <version>1.2.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-chrome-driver</artifactId>
+                <version>3.141.59</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>4.8.1</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.squareup.okio/okio -->
+            <dependency>
+                <groupId>com.squareup.okio</groupId>
+                <artifactId>okio</artifactId>
+                <version>2.7.0</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/javax.inject/javax.inject -->
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>1</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/com.google.jimfs/jimfs -->
@@ -106,6 +145,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
+                    <configuration>
+                        <release>11</release>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

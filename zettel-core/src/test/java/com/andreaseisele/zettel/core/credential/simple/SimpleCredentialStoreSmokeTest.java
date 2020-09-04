@@ -3,7 +3,6 @@ package com.andreaseisele.zettel.core.credential.simple;
 import com.andreaseisele.zettel.core.credential.data.UsernamePasswordCredential;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
-import com.google.common.truth.Truth8;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SimpleCredentialStoreSmokeTest {
 
@@ -53,7 +52,7 @@ class SimpleCredentialStoreSmokeTest {
         SimpleCredentialStore credentialStore = SimpleCredentialStore.loadFromFile(inputFile, MASTER_PASSWORD);
 
         Optional<UsernamePasswordCredential> maybeCredential = credentialStore.get(TEST_KEY, UsernamePasswordCredential.class);
-        Truth8.assertThat(maybeCredential).isPresent();
+        assertThat(maybeCredential).isPresent();
 
         UsernamePasswordCredential credential = maybeCredential.get();
         assertThat(credential.getUsername()).isEqualTo(TEST_USER);
@@ -72,7 +71,7 @@ class SimpleCredentialStoreSmokeTest {
         SimpleCredentialStore loaded = SimpleCredentialStore.loadFromFile(file, MASTER_PASSWORD);
 
         Optional<UsernamePasswordCredential> maybeCredential = loaded.get(TEST_KEY, UsernamePasswordCredential.class);
-        Truth8.assertThat(maybeCredential).isPresent();
+        assertThat(maybeCredential).isPresent();
 
         UsernamePasswordCredential credential = maybeCredential.get();
         assertThat(credential.getUsername()).isEqualTo(TEST_USER);

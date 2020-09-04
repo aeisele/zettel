@@ -12,11 +12,18 @@
     <artifactId>zettel-cli</artifactId>
 
     <dependencies>
-            <!-- https://mvnrepository.com/artifact/com.google.dagger/dagger -->
-            <dependency>
-                <groupId>com.google.dagger</groupId>
-                <artifactId>dagger</artifactId>
-            </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>zettel-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.dagger/dagger -->
+        <dependency>
+            <groupId>com.google.dagger</groupId>
+            <artifactId>dagger</artifactId>
+        </dependency>
 
     </dependencies>
 

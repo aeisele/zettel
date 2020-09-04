@@ -5,8 +5,8 @@ import com.andreaseisele.zettel.core.credential.CredentialStoreException;
 import com.andreaseisele.zettel.core.credential.data.Credential;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -29,7 +29,7 @@ import java.util.Optional;
 
 public class SimpleCredentialStore implements CredentialStore {
 
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(SimpleCredentialStore.class);
 
     private static final String SECRET_KEY_DERIVE_ALGO = "PBKDF2WithHmacSHA512";
     private static final String SECRET_KEY_ALGO = "AES";
@@ -90,7 +90,9 @@ public class SimpleCredentialStore implements CredentialStore {
 
             byte[] unEncrypted = objectMapper.writerFor(credentialMapType).writeValueAsBytes(credentials);
 
-            logger.debug("unencrypted: {}", () -> new String(unEncrypted));
+            if (logger.isDebugEnabled()) {
+                logger.debug("unencrypted: {}", new String(unEncrypted));
+            }
 
             byte[] salt = generateSalt();
             SecretKeySpec secretKey = deriveSecretKey(masterPassword, salt);
@@ -108,7 +110,7 @@ public class SimpleCredentialStore implements CredentialStore {
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeySpecException | InvalidKeyException
                 | InvalidParameterSpecException | IllegalBlockSizeException | BadPaddingException | IOException e) {
             String message = "error saving simple credential store to file " + outputFile + ": " + e.getMessage();
-            logger.error(e);
+            logger.error(message);
             throw new CredentialStoreException(message, e);
         }
     }
