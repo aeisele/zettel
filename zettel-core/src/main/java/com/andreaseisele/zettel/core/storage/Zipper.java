@@ -5,11 +5,13 @@ import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
+import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,24 +24,31 @@ public class Zipper {
 
     private static final Logger logger = LoggerFactory.getLogger(Zipper.class);
 
+    public static void extract(Path archive, Path target) throws IOException {
+        final Tika tika = new Tika();
+        final String contentType = tika.detect(archive);
+        switch (contentType) {
+            case "application/zip":
+                unzip(archive, target);
+                break;
+            case "application/x-7z-compressed":
+                unSevenZip(archive, target);
+                break;
+            case "application/tar":
+                unTar(archive, target);
+                break;
+            default:
+                throw new RuntimeException("unsupported content type " + contentType);
+        }
+    }
+
     public static void unzip(Path zip, Path target) throws IOException {
         logger.debug("unzipping {} into {}", zip, target);
 
         try (ZipInputStream zin = new ZipInputStream(new BufferedInputStream(Files.newInputStream(zip)))) {
             ZipEntry entry;
             while ((entry = zin.getNextEntry()) != null) {
-                final Path entryPath = target.resolve(entry.getName());
-
-                if (entry.isDirectory()) {
-                    logger.debug("entry {} is directory, creating {}", entry, entryPath);
-                    Files.createDirectories(entryPath);
-
-                } else {
-                    final Path dir = entryPath.getParent();
-                    logger.debug("entry is file, inflating {} to {}", entry, dir);
-                    Files.createDirectories(dir);
-                    Files.copy(zin, entryPath);
-                }
+                extractEntry(target, zin, entry.getName(), entry.isDirectory());
             }
         }
     }
@@ -88,19 +97,27 @@ public class Zipper {
                      new TarArchiveInputStream(new BufferedInputStream(Files.newInputStream(tar)))) {
             TarArchiveEntry entry;
             while ((entry = tin.getNextTarEntry()) != null) {
-                final Path entryPath = target.resolve(entry.getName());
-
-                if (entry.isDirectory()) {
-                    logger.debug("entry {} is directory, creating {}", entry, entryPath);
-                    Files.createDirectories(entryPath);
-
-                } else {
-                    final Path dir = entryPath.getParent();
-                    logger.debug("entry is file, inflating {} to {}", entry, dir);
-                    Files.createDirectories(dir);
-                    Files.copy(tin, entryPath);
-                }
+                extractEntry(target, tin, entry.getName(), entry.isDirectory());
             }
+        }
+    }
+
+    private static void extractEntry(Path target,
+                                     InputStream in,
+                                     String entryName,
+                                     boolean isDirectory) throws IOException {
+
+        final Path entryPath = target.resolve(entryName);
+
+        if (isDirectory) {
+            logger.debug("entry {} is directory, creating {}", entryName, entryPath);
+            Files.createDirectories(entryPath);
+
+        } else {
+            final Path dir = entryPath.getParent();
+            logger.debug("entry is file, inflating {} to {}", entryName, dir);
+            Files.createDirectories(dir);
+            Files.copy(in, entryPath);
         }
     }
 

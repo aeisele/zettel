@@ -7,6 +7,7 @@ import okhttp3.ResponseBody;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -41,6 +42,10 @@ public class Downloader {
         }
 
         return success;
+    }
+
+    public static String getFileName(URL url) {
+        return new File(url.getPath()).getName();
     }
 
 }
