@@ -27,6 +27,7 @@ public class ChromeDriverManager {
     private static final String DRIVER_ZIP_LINUX = "linux64";
     private static final String DRIVER_ZIP_MAC = "mac64";
     private static final String KEY_DRIVER_VERSION = "chrome-driver.version";
+    private static final String KEY_DRIVER_BINARY_PREFIX = "chrome-driver.binary.";
     private static final String DRIVER_DIR = "chromeDriver";
     private static final String ENV_DRIVER_PATH = "webdriver.chrome.driver";
 
@@ -58,7 +59,22 @@ public class ChromeDriverManager {
             downloadAndUnzipDriver(driverVersion, versionDir);
         }
 
-        setupEnvProperty(versionDir);
+        setupEnvPropertyForDir(versionDir);
+    }
+
+    public String getBinaryName() {
+        final String binaryName = configurationProvider.getValue(KEY_DRIVER_BINARY_PREFIX
+                + OperatingSystem.getCurrent());
+        if (binaryName == null) {
+            throw new ChromeDriverException("unable to determine binary name from config");
+        }
+        return binaryName;
+    }
+
+    public void setupEnvPropertyForBinary(Path binary) {
+        final String absoluteDir = binary.toAbsolutePath().toString();
+        logger.debug("setting up env variable {} to point to {}", ENV_DRIVER_PATH, absoluteDir);
+        System.setProperty(ENV_DRIVER_PATH, absoluteDir);
     }
 
     private void downloadAndUnzipDriver(String driverVersion, Path versionDir) throws IOException {
@@ -92,10 +108,9 @@ public class ChromeDriverManager {
         return driverZipBuilder.append(DRIVER_ZIP_EXT).toString();
     }
 
-    private void setupEnvProperty(Path dir) {
-        final String absoluteDir = dir.toAbsolutePath().toString();
-        logger.debug("setting up env variable {} to point to {}", ENV_DRIVER_PATH, absoluteDir);
-        System.setProperty(ENV_DRIVER_PATH, absoluteDir);
+    private void setupEnvPropertyForDir(Path dir) {
+        final String binaryName = getBinaryName();
+        setupEnvPropertyForBinary(dir.resolve(binaryName));
     }
 
 }

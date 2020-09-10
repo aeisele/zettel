@@ -1,7 +1,8 @@
 package com.andreaseisele.zettel.core.storage;
 
-import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
-import org.apache.commons.compress.archivers.sevenz.SevenZFile;
+import net.sf.sevenzipjbinding.ArchiveFormat;
+import net.sf.sevenzipjbinding.SevenZip;
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
@@ -56,28 +57,11 @@ public class Zipper {
     public static void unSevenZip(Path sevenZip, Path target) throws IOException {
         logger.debug("un7zipping {} into {}", sevenZip, target);
 
-        try (SevenZFile sevenZFile = new SevenZFile(sevenZip.toFile())) {
-            SevenZArchiveEntry entry;
-            while ((entry = sevenZFile.getNextEntry()) != null) {
-                final Path entryPath = target.resolve(entry.getName());
+        try (var randomAccessFile = new RandomAccessFile(sevenZip.toFile(), "r");
+             var archive = SevenZip.openInArchive(ArchiveFormat.SEVEN_ZIP,
+                     new RandomAccessFileInStream(randomAccessFile))) {
 
-                if (entry.isDirectory()) {
-                    logger.debug("entry {} is directory, creating {}", entry, entryPath);
-                    Files.createDirectories(entryPath);
-
-                } else {
-                    final Path dir = entryPath.getParent();
-                    logger.debug("entry is file, inflating {} to {}", entry, dir);
-                    Files.createDirectories(dir);
-                    byte[] buffer = new byte[BUFFER_SIZE];
-                    int length;
-                    try (OutputStream out = Files.newOutputStream(entryPath)) {
-                        while ((length = sevenZFile.read(buffer)) != -1) {
-                            out.write(buffer, 0, length);
-                        }
-                    }
-                }
-            }
+            archive.extract(null, false, new SevenZipExtractCallback(archive, target));
         }
     }
 

@@ -22,7 +22,7 @@ public class Main {
         try {
             chromeDriverManager.installDriver();
             chromiumManager.installChromium();
-            System.out.println("chromium binary " + chromiumManager.getBinary());
+            System.out.println("chromium binary " + chromiumManager.findMainBinary());
         } catch (IOException e) {
             logger.error("exception in main", e);
         }

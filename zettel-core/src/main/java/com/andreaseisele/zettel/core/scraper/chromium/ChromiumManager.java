@@ -58,12 +58,17 @@ public class ChromiumManager {
         this.currentChromiumDir = versionDir;
     }
 
-    public Path getBinary() throws IOException {
+    public Path findMainBinary() throws IOException {
         final String binaryName = configurationProvider.getValue(KEY_CHROMIUM_BINARY_PREFIX
                 + OperatingSystem.getCurrent());
         if (binaryName == null) {
             throw new ChromiumException("unable to determine binary name from config");
         }
+
+        return findBinary(binaryName);
+    }
+
+    public Path findBinary(String binaryName) throws IOException {
 
         if (currentChromiumDir == null) {
             throw new ChromiumException("no chromium installed");

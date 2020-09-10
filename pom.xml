@@ -26,6 +26,7 @@
         <junit.version>5.6.2</junit.version>
         <truth.version>1.0.1</truth.version>
         <dagger.version>2.28.3</dagger.version>
+        <sevenzipjbinding.version>16.02-2.01</sevenzipjbinding.version>
     </properties>
 
     <dependencies>
@@ -133,12 +134,34 @@
                 <version>1.8</version>
             </dependency>
 
+            <!-- https://mvnrepository.com/artifact/net.sf.sevenzipjbinding/sevenzipjbinding -->
+            <dependency>
+                <groupId>net.sf.sevenzipjbinding</groupId>
+                <artifactId>sevenzipjbinding</artifactId>
+                <version>${sevenzipjbinding.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/net.sf.sevenzipjbinding/sevenzipjbinding-all-platforms -->
+            <dependency>
+                <groupId>net.sf.sevenzipjbinding</groupId>
+                <artifactId>sevenzipjbinding-all-platforms</artifactId>
+                <version>${sevenzipjbinding.version}</version>
+            </dependency>
+
             <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
             <dependency>
                 <groupId>org.apache.tika</groupId>
                 <artifactId>tika-core</artifactId>
                 <version>1.24.1</version>
             </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>29.0-jre</version>
+            </dependency>
+
 
             <!-- https://mvnrepository.com/artifact/com.google.jimfs/jimfs -->
             <dependency>
