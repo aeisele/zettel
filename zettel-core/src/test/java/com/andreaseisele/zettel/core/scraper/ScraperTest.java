@@ -44,6 +44,14 @@ public class ScraperTest {
         setupCredentialStore();
     }
 
+    @AfterEach
+    void tearDown() {
+        if (chromeDriver != null) {
+            chromeDriver.close();
+            chromeDriver.quit();
+        }
+    }
+
     private void setupChromium(CoreFactory coreFactory) throws IOException {
         chromiumManager = coreFactory.chromiumManager();
         chromiumManager.installChromium();
@@ -55,14 +63,6 @@ public class ScraperTest {
         // todo headless mode once stuff works
         this.chromeDriver = new ChromeDriver(chromeOptions);
         chromeDriver.manage().timeouts().implicitlyWait(2, TimeUnit.MINUTES);
-    }
-
-    @AfterEach
-    void tearDown() {
-        if (chromeDriver != null) {
-            chromeDriver.close();
-            chromeDriver.quit();
-        }
     }
 
     private void setupCredentialStore() throws URISyntaxException {
