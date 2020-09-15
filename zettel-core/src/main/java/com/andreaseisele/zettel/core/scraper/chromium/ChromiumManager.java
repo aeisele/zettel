@@ -25,6 +25,9 @@ public class ChromiumManager {
     private static final String KEY_CHROMIUM_URL_PREFIX = "chromium.url.";
     private static final String KEY_CHROMIUM_BINARY_PREFIX = "chromium.binary.";
 
+    private static final String ENV_DRIVER_PATH = "webdriver.chrome.driver";
+    private static final String KEY_DRIVER_BINARY_PREFIX = "chrome-driver.binary.";
+
     private final StorageManager storageManager;
     private final ConfigurationProvider configurationProvider;
     private final Downloader downloader;
@@ -49,13 +52,26 @@ public class ChromiumManager {
         Path chromiumDir = storageManager.getApplicationSubDirectory(CHROMIUM_DIR);
         Path versionDir = chromiumDir.resolve(chromiumVersion);
         if (Files.exists(versionDir)) {
-            logger.info("chromium dir {} does exist, not installing chromium", chromiumDir);
+            logger.info("chromium dir {} does exist, not installing chromium", versionDir);
         } else {
             logger.info("installing chromium {} into {}", chromiumVersion, versionDir);
-            downloadAndUnzipChromium(chromiumVersion, versionDir);
+            downloadAndUnzipChromium(versionDir);
         }
 
         this.currentChromiumDir = versionDir;
+    }
+
+    public void setupChromeDriver() throws IOException {
+        final String binaryName = configurationProvider.getValue(KEY_DRIVER_BINARY_PREFIX
+                + OperatingSystem.getCurrent());
+        if (binaryName == null) {
+            throw new ChromiumException("unable to determine binary name from config");
+        }
+
+        final Path binary = findBinary(binaryName);
+        final String absoluteDir = binary.toAbsolutePath().toString();
+        logger.debug("setting up env variable {} to point to {}", ENV_DRIVER_PATH, absoluteDir);
+        System.setProperty(ENV_DRIVER_PATH, absoluteDir);
     }
 
     public Path findMainBinary() throws IOException {
@@ -68,7 +84,7 @@ public class ChromiumManager {
         return findBinary(binaryName);
     }
 
-    public Path findBinary(String binaryName) throws IOException {
+    private Path findBinary(String binaryName) throws IOException {
 
         if (currentChromiumDir == null) {
             throw new ChromiumException("no chromium installed");
@@ -81,7 +97,7 @@ public class ChromiumManager {
                 .orElseThrow(() -> new ChromiumException("unable to find chromium binary " + binaryName + " in " + currentChromiumDir));
     }
 
-    private void downloadAndUnzipChromium(String chromiumVersion, Path versionDir) throws IOException {
+    private void downloadAndUnzipChromium(Path versionDir) throws IOException {
         Files.createDirectories(versionDir);
         final URL downloadUrl = new URL(
                 configurationProvider.getValue(KEY_CHROMIUM_URL_PREFIX + OperatingSystem.getCurrent()));

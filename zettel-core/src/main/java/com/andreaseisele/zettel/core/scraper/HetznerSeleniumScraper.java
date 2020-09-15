@@ -1,15 +1,22 @@
 package com.andreaseisele.zettel.core.scraper;
 
+import com.andreaseisele.zettel.core.credential.data.UsernamePasswordCredential;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
+import java.nio.CharBuffer;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
 public class HetznerSeleniumScraper implements Scraper {
 
+
+    private final UsernamePasswordCredential credential;
+
+    public HetznerSeleniumScraper(UsernamePasswordCredential credential) {
+        this.credential = credential;
+    }
 
     public List<Path> download(WebDriver driver, LocalDate start, LocalDate end) {
 
@@ -17,8 +24,8 @@ public class HetznerSeleniumScraper implements Scraper {
 
         // ####### 1 Login
         // TODO put in credentials from credentials store
-        driver.findElement(By.id("_username")).sendKeys("TODO");
-        driver.findElement(By.id("_password")).sendKeys("TODO");
+        driver.findElement(By.id("_username")).sendKeys(CharBuffer.wrap(credential.getUsername()));
+        driver.findElement(By.id("_password")).sendKeys(CharBuffer.wrap(credential.getPassword()));
         driver.findElement(By.id("submit-login")).click();
 
 
